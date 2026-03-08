@@ -8,7 +8,7 @@ from pipeline_configs import PIPELINE_CONFIGS
 
 logging.basicConfig(level=logging.DEBUG)
 
-API_BASE_URL = "/api/scraper"
+API_BASE_URL = "/api/transfomer"
 
 app = FastAPI(openapi_url=API_BASE_URL + "/openapi.json", docs_url=API_BASE_URL + "/docs", redoc_url=API_BASE_URL + "/redoc")
 pipeline_server: PipelineServer = PipelineServer()
