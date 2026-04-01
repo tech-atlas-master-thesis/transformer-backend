@@ -1,7 +1,16 @@
 from pipelineFramework import LocalisationString, PipelineConfig
-from pipeline_configs.dummy_step_factory import get_dummy_step
 from pipelineFramework.server.common_steps.get_results_from_latest_pipeline import GetResultFromLatestPipeline
-from pipeline_configs.transform_steps.main_step import MainTransformer
+from pipeline_configs.transform_steps.grant_database import GrantDatabaseStep
+from pipeline_configs.transform_steps.grant_enrich import GrantEnrichStep
+from pipeline_configs.transform_steps.grant_extract import GrantExtractStep
+from pipeline_configs.transform_steps.grant_normalize import GrantNormalizeStep
+from pipeline_configs.transform_steps.organisations_database import OrganisationDatabaseStep
+from pipeline_configs.transform_steps.organisations_enrich import OrganisationEnrichStep
+from pipeline_configs.transform_steps.organisations_extract import OrganisationExtractStep
+from pipeline_configs.transform_steps.organisations_normalize import OrganisationNormalizeStep
+from pipeline_configs.transform_steps.project_enrich import ProjectEnrichStep
+from pipeline_configs.transform_steps.project_normalize import ProjectNormalizeStep
+from pipeline_configs.transform_steps.projects_database import ProjectDatabaseStep
 
 TRANSFORMER_PIPELINE = PipelineConfig(
     type="transform_main",
@@ -14,11 +23,17 @@ TRANSFORMER_PIPELINE = PipelineConfig(
             "scraper_main",
             "getDataFFG",
         ),
-        MainTransformer(),
-        get_dummy_step(
-            "getDataFWF",
-            LocalisationString("[DUMMY_STEP] Get Data from FWF", "[DUMMY_STEP] Daten von FWF laden"),
-        ),
+        ProjectNormalizeStep(),
+        ProjectEnrichStep(),
+        OrganisationExtractStep(),
+        OrganisationNormalizeStep(),
+        OrganisationEnrichStep(),
+        OrganisationDatabaseStep(),
+        GrantExtractStep(),
+        GrantNormalizeStep(),
+        GrantEnrichStep(),
+        GrantDatabaseStep(),
+        ProjectDatabaseStep(),
     ],
     parallelize=True,
 )

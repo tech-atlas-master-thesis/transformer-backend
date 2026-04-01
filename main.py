@@ -7,6 +7,7 @@ from pipelineFramework import PipelineServer, add_common_api_calls
 from pipeline_configs import PIPELINE_CONFIGS
 
 logging.basicConfig(level=logging.DEBUG)
+logging.getLogger("pymongo").setLevel(logging.INFO)
 load_dotenv()
 
 API_BASE_URL = "/api/transformer"
