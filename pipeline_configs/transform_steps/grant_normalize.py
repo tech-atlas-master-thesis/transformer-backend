@@ -11,7 +11,7 @@ from pipelineFramework import (
 
 
 class GrantNormalizeStep(StepConfig):
-    async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None):
+    async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None, **_):
         if results is None:
             results = {}
         SCRAPER_DATA = results.get("grant_extract")

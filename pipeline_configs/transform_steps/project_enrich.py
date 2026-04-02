@@ -11,7 +11,7 @@ from pipelineFramework import (
 
 
 class ProjectEnrichStep(StepConfig):
-    async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None):
+    async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None, **_):
         if results is None:
             results = {}
         SCRAPER_DATA = results.get("project_normalize")
@@ -27,7 +27,7 @@ class ProjectEnrichStep(StepConfig):
         return "project_enrich"
 
     def display_name(self) -> LocalisationStringType:
-        return LocalisationString("Transform", "Transform")
+        return LocalisationString("Enrich Project Data", "Projekt Daten Anreichern")
 
     def description(self) -> LocalisationStringType:
         return LocalisationString("Desc", "Desc")

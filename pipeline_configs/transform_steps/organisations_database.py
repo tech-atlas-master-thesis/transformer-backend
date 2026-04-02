@@ -11,7 +11,7 @@ from pipelineFramework import (
 
 
 class OrganisationDatabaseStep(StepConfig):
-    async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None):
+    async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None, **_):
         if results is None:
             results = {}
         SCRAPER_DATA = results.get("organisation_enrich")
@@ -33,4 +33,4 @@ class OrganisationDatabaseStep(StepConfig):
         return LocalisationString("Desc", "Desc")
 
     def dependencies(self) -> Union[List[str], None]:
-        return ["organisation_enrich"]
+        return ["organisation_enrich", "create_dataset"]

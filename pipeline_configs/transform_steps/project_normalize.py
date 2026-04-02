@@ -13,7 +13,7 @@ from pipelineFramework import (
 
 
 class ProjectNormalizeStep(StepConfig):
-    async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None):
+    async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None, **_):
         if results is None:
             results = {}
         SCRAPER_DATA: pd.DataFrame = results.get("getScraperResults")
@@ -24,15 +24,15 @@ class ProjectNormalizeStep(StepConfig):
         print(SCRAPER_DATA.columns)
         projects = SCRAPER_DATA[
             [
-                "id",
-                "short_title",
-                "long_title",
-                "project_start",
-                "project_end",
+                "externalId",
+                "short",
+                "title",
+                "abstract",
+                "start",
+                "end",
                 "status",
                 "keywords",
-                "found_keyword",
-                "abstract",
+                "keyTechnologies",
             ]
         ]
         yield projects, EventType.RESULT
@@ -44,7 +44,7 @@ class ProjectNormalizeStep(StepConfig):
         return "project_normalize"
 
     def display_name(self) -> LocalisationStringType:
-        return LocalisationString("Transform", "Transform")
+        return LocalisationString("Normalize Project Data", "Projekt Daten Normalisieren")
 
     def description(self) -> LocalisationStringType:
         return LocalisationString("Desc", "Desc")
