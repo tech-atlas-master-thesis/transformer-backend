@@ -1,9 +1,8 @@
 import datetime
-from typing import Optional, Union, List, Dict, Any
+from typing import Union, List
 
 from pipelineFramework import (
     StepConfig,
-    UserStepConfig,
     LocalisationStringType,
     LocalisationString,
     StepUserConfig,
@@ -17,6 +16,7 @@ from pipelineFramework.server.db.helper import get_fe_db_client
 class CreateDataSetStep(StepConfig):
     async def run(self, pipeline: Pipeline, **_):
         datasets = get_fe_db_client().get_collection("datasets")
+        yield [pipeline.type, str(pipeline.id), pipeline.name], EventType.INFO
         dataset = datasets.insert_one(
             {
                 "pipelineType": pipeline.type,
