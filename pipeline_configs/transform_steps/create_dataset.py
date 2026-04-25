@@ -9,7 +9,7 @@ from pipelineFramework import (
     EventType,
     Pipeline,
 )
-from pipelineFramework.server.api.dto import AuditInfoDto, UserDto
+from pipelineFramework.server.dto import AuditInfoDto, UserDto
 from pipelineFramework.server.db.helper import get_fe_db_client
 
 
