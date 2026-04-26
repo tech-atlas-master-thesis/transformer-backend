@@ -15,7 +15,7 @@ from pipelineFramework.server.dto import AuditInfoDto, UserDto
 from pipelineFramework.server.db.helper import get_fe_db_client
 
 
-class CreateDataSetStep(StepConfig):
+class PublishDataSetStep(StepConfig):
     async def run(self, pipeline: Pipeline, results, **_):
         datasets = get_fe_db_client().get_collection("datasets")
         DATASET_ID: ObjectId = results.get("create_dataset")

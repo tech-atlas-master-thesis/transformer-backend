@@ -12,6 +12,7 @@ from pipeline_configs.transform_steps.organisations_normalize import Organisatio
 from pipeline_configs.transform_steps.project_enrich import ProjectEnrichStep
 from pipeline_configs.transform_steps.project_normalize import ProjectNormalizeStep
 from pipeline_configs.transform_steps.project_database import ProjectDatabaseStep
+from pipeline_configs.transform_steps.publish_dataset import PublishDataSetStep
 
 TRANSFORMER_PIPELINE = PipelineConfig(
     type="transform_main",
@@ -36,6 +37,7 @@ TRANSFORMER_PIPELINE = PipelineConfig(
         GrantEnrichStep(),
         GrantDatabaseStep(),
         ProjectDatabaseStep(),
+        PublishDataSetStep(),
     ],
     parallelize=True,
 )
