@@ -1,5 +1,6 @@
-import datetime
 from typing import Union, List
+
+from bson import ObjectId
 
 from pipelineFramework import (
     StepConfig,
@@ -9,26 +10,14 @@ from pipelineFramework import (
     EventType,
     Pipeline,
 )
-from pipelineFramework.server.dto import AuditInfoDto, UserDto
-from pipelineFramework.server.db.helper import get_fe_db_client
 
 
 class CreateDataSetStep(StepConfig):
     async def run(self, pipeline: Pipeline, **_):
-        datasets = get_fe_db_client().get_collection("datasets")
-        yield [pipeline.type, str(pipeline.id), pipeline.name], EventType.INFO
-        dataset = datasets.insert_one(
-            {
-                "pipelineType": pipeline.type,
-                "pipeline": pipeline.id,
-                "pipelineName": pipeline.name,
-                "created": AuditInfoDto(
-                    UserDto(123, "User", "user@email.com"), datetime.datetime.now(datetime.UTC)
-                ).serialize(),
-            }
-        )
-        yield f"DataSet {dataset.inserted_id} created", EventType.INFO
-        yield dataset.inserted_id, EventType.RESULT
+        yield f"Creating new ID for data for Pipeline {str(pipeline)}", EventType.INFO
+        data_set_id = ObjectId()
+        yield f"DataSet ID {data_set_id} created", EventType.INFO
+        yield data_set_id, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []
