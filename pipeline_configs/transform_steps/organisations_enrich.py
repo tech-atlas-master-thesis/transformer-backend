@@ -14,11 +14,11 @@ class OrganisationEnrichStep(StepConfig):
     async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None, **_):
         if results is None:
             results = {}
-        SCRAPER_DATA = results.get("organisation_normalize")
-        if SCRAPER_DATA is None:
+        ORGANISATIONS = results.get("organisation_normalize")
+        if ORGANISATIONS is None:
             raise FileNotFoundError("No organisation data found")
         yield "Data found", EventType.INFO
-        yield SCRAPER_DATA, EventType.RESULT
+        yield ORGANISATIONS, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []

@@ -1,3 +1,4 @@
+import json
 from typing import Optional, Union, List, Dict, Any
 
 import pandas as pd
@@ -12,28 +13,43 @@ from pipelineFramework import (
 )
 
 
-class ProjectNormalizeStep(StepConfig):
+class ProjectExtractStep(StepConfig):
     async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None, **_):
         if results is None:
             results = {}
-        PROJECTS: pd.DataFrame = results.get("project_extract")
-        if PROJECTS is None:
+        SCRAPER_DATA: pd.DataFrame = results.get("getScraperResults")
+        if SCRAPER_DATA is None or not isinstance(SCRAPER_DATA, pd.DataFrame):
             raise FileNotFoundError("No scraper data found")
         yield "Data found", EventType.INFO
 
-        yield PROJECTS, EventType.RESULT
+        print(SCRAPER_DATA.columns)
+        projects = SCRAPER_DATA[
+            [
+                "externalId",
+                "short",
+                "title",
+                "abstract",
+                "start",
+                "end",
+                "status",
+                "keywords",
+                "keyTechnologies",
+                "organisations",
+            ]
+        ].to_dict("records")
+        yield projects, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []
 
     def name(self) -> str:
-        return "project_normalize"
+        return "project_extract"
 
     def display_name(self) -> LocalisationStringType:
-        return LocalisationString("Normalize Project Data", "Projekt Daten Normalisieren")
+        return LocalisationString("Extract Project Data", "Projekt Daten Extrahieren")
 
     def description(self) -> LocalisationStringType:
         return LocalisationString("Desc", "Desc")
 
     def dependencies(self) -> Union[List[str], None]:
-        return ["project_extract"]
+        return ["getScraperResults"]

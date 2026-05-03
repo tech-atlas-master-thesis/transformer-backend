@@ -14,11 +14,11 @@ class GrantEnrichStep(StepConfig):
     async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None, **_):
         if results is None:
             results = {}
-        SCRAPER_DATA = results.get("grant_normalize")
-        if SCRAPER_DATA is None:
+        GRANTS = results.get("grant_normalize")
+        if GRANTS is None:
             raise FileNotFoundError("No organisation data found")
         yield "Data found", EventType.INFO
-        yield SCRAPER_DATA, EventType.RESULT
+        yield GRANTS, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []

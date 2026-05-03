@@ -1,5 +1,7 @@
 from typing import Optional, Union, List, Dict, Any
 
+from bson import ObjectId
+
 from pipelineFramework import (
     StepConfig,
     UserStepConfig,
@@ -8,17 +10,25 @@ from pipelineFramework import (
     StepUserConfig,
     EventType,
 )
+from pipelineFramework.server.db.helper import get_fe_db_client
 
 
 class OrganisationDatabaseStep(StepConfig):
     async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None, **_):
         if results is None:
             results = {}
-        SCRAPER_DATA = results.get("organisation_enrich")
-        if SCRAPER_DATA is None:
+        ORGANISATIONS = results.get("organisation_enrich")
+        DATASET = results.get("create_dataset")
+        if ORGANISATIONS is None:
             raise FileNotFoundError("No organisation data found")
         yield "Data found", EventType.INFO
-        yield SCRAPER_DATA, EventType.RESULT
+
+        project_db = get_fe_db_client().get_collection("organisations")
+
+        ids = project_db.insert_many([{**item, "dataset": DATASET} for item in ORGANISATIONS])
+        yield dict(
+            zip((org["name"] for org in ORGANISATIONS), (org_id for org_id in ids.inserted_ids))
+        ), EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []

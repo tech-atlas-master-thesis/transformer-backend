@@ -18,16 +18,15 @@ class ProjectDatabaseStep(StepConfig):
     async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None, **_):
         if results is None:
             results = {}
-        PROJECTS_DATA: pd.DataFrame = results.get("project_enrich")
+        PROJECTS: pd.DataFrame = results.get("project_enrich")
         DATASET = results.get("create_dataset")
-        if PROJECTS_DATA is None or not isinstance(PROJECTS_DATA, pd.DataFrame):
+        if PROJECTS is None:
             raise FileNotFoundError("No organisation data found")
         yield "Data found", EventType.INFO
 
         project_db = get_fe_db_client().get_collection("projects")
-        items = json.loads(PROJECTS_DATA.to_json(orient="records"))
 
-        project_db.insert_many([{**item, "dataset": DATASET} for item in items])
+        project_db.insert_many([{**item, "dataset": DATASET} for item in PROJECTS])
 
     def user_config(self) -> List[StepUserConfig]:
         return []
@@ -42,4 +41,4 @@ class ProjectDatabaseStep(StepConfig):
         return LocalisationString("Desc", "Desc")
 
     def dependencies(self) -> Union[List[str], None]:
-        return ["project_enrich", "organisation_enrich", "grant_enrich", "create_dataset"]
+        return ["project_enrich", "create_dataset"]

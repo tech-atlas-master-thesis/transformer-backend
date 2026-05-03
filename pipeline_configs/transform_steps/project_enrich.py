@@ -1,3 +1,4 @@
+import json
 from typing import Optional, Union, List, Dict, Any
 
 from pipelineFramework import (
@@ -14,11 +15,28 @@ class ProjectEnrichStep(StepConfig):
     async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None, **_):
         if results is None:
             results = {}
-        SCRAPER_DATA = results.get("project_normalize")
-        if SCRAPER_DATA is None:
+        PROJECTS = results.get("project_normalize")
+        ORGANISATION_MAPPING: Dict[str, str] = results.get("organisation_database")
+        # TODO: add grants
+        # GRANT_MAPPING: Dict[str, str] = results.get("grant_database")
+        if PROJECTS is None:
             raise FileNotFoundError("No scraper data found")
         yield "Data found", EventType.INFO
-        yield SCRAPER_DATA, EventType.RESULT
+
+        for project in PROJECTS:
+            orgs = json.loads(project["organisations"])
+            project["organisations"] = [ORGANISATION_MAPPING.get(org["organisationName"]) for org in orgs]
+            project_leaders = [
+                ORGANISATION_MAPPING.get(org["organisationName"]) for org in orgs if org["role_in_project"]
+            ]
+            project["projectLeader"] = (
+                None
+                if len(project_leaders) == 0
+                else project_leaders[0] if len(project_leaders) == 1 else project_leaders
+            )
+            project["keywords"] = project["keywords"].split(", ")
+
+        yield PROJECTS, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []
@@ -33,4 +51,4 @@ class ProjectEnrichStep(StepConfig):
         return LocalisationString("Desc", "Desc")
 
     def dependencies(self) -> Union[List[str], None]:
-        return ["project_normalize"]
+        return ["project_normalize", "organisation_database", "grant_database"]

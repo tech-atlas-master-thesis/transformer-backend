@@ -10,6 +10,7 @@ from pipeline_configs.transform_steps.organisations_enrich import OrganisationEn
 from pipeline_configs.transform_steps.organisations_extract import OrganisationExtractStep
 from pipeline_configs.transform_steps.organisations_normalize import OrganisationNormalizeStep
 from pipeline_configs.transform_steps.project_enrich import ProjectEnrichStep
+from pipeline_configs.transform_steps.project_extract import ProjectExtractStep
 from pipeline_configs.transform_steps.project_normalize import ProjectNormalizeStep
 from pipeline_configs.transform_steps.project_database import ProjectDatabaseStep
 from pipeline_configs.transform_steps.publish_dataset import PublishDataSetStep
@@ -26,8 +27,6 @@ TRANSFORMER_PIPELINE = PipelineConfig(
             "Scraper Pipeline",
             "getDataFFG",
         ),
-        ProjectNormalizeStep(),
-        ProjectEnrichStep(),
         OrganisationExtractStep(),
         OrganisationNormalizeStep(),
         OrganisationEnrichStep(),
@@ -36,6 +35,9 @@ TRANSFORMER_PIPELINE = PipelineConfig(
         GrantNormalizeStep(),
         GrantEnrichStep(),
         GrantDatabaseStep(),
+        ProjectExtractStep(),
+        ProjectNormalizeStep(),
+        ProjectEnrichStep(),
         ProjectDatabaseStep(),
         PublishDataSetStep(),
     ],
