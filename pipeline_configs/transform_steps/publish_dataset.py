@@ -26,9 +26,7 @@ class PublishDataSetStep(StepConfig):
                 "pipelineType": pipeline.type,
                 "pipeline": pipeline.id,
                 "pipelineName": pipeline.name,
-                "created": AuditInfoDto(
-                    UserDto(123, "User", "user@email.com"), datetime.datetime.now(datetime.UTC)
-                ).serialize(),
+                "created": AuditInfoDto(pipeline.created.by, datetime.datetime.now(datetime.UTC)).serialize(),
             }
         )
         yield f"DataSet {DATASET_ID} created", EventType.INFO
