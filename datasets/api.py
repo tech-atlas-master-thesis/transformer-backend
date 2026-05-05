@@ -21,16 +21,12 @@ class _DataSetObject:
 
 def _serialize_object_ids(obj: Any) -> Any:
     if isinstance(obj, list):
-        for item in obj:
-            _serialize_object_ids(item)
+        return [_serialize_object_ids(item) for item in obj]
     if isinstance(obj, dict):
-        for key, value in obj.items():
-            if isinstance(value, ObjectId):
-                obj[key] = str(value)
-            elif isinstance(value, list):
-                _serialize_object_ids(value)
-            elif isinstance(value, dict):
-                _serialize_object_ids(value)
+        return {key: _serialize_object_ids(value) for key, value in obj.items()}
+    if isinstance(obj, ObjectId):
+        return str(obj)
+    return obj
 
 
 def _get_data_set_object(
