@@ -6,7 +6,7 @@ from bson import ObjectId
 from fastapi import FastAPI, HTTPException, Depends, Query
 
 from datasets.dto import DatasetDto
-from pipelineFramework import PaginatedListDto, PageDto, get_fe_db_client, require_all_entitlements
+from pipelineFramework import PaginatedListDto, PageDto, get_fe_db_client, require_all_entitlements, Lookup
 
 AUTH_REQUIREMENTS_VIEW = require_all_entitlements("tech-atlas:read")
 
@@ -32,26 +32,32 @@ def _serialize_object_ids(obj: Any) -> Any:
 def _get_data_set_object(
     collection: str,
     search_fields: List[str],
-    included_fields: List[str],
+    included_fields: List[Lookup],
     dataset_id: str,
     search: Optional[str] = None,
-    includeData: Optional[bool] = None,
+    include_data: Optional[bool] = None,
     sort: Optional[str] = None,
     limit: int = 20,
     offset: int = 0,
 ) -> PaginatedListDto[Any]:
     dataset_db = get_fe_db_client().get_collection(collection)
-    query = {
-        "dataset": ObjectId(dataset_id),
-    }
-    # TODO: implement search
-    # TODO: implement includeData
+    query = {}
+    aggregation = [{"$match": {"dataset": ObjectId(dataset_id)}}]
+    query["dataset"] = ObjectId(dataset_id)
+    if search:
+        query["$or"] = [{field: {"$regex": re.escape(search), "$options": "$i"}} for field in search_fields]
+        aggregation.append(
+            {"$or": [{field: {"$regex": re.escape(search), "$options": "$i"}} for field in search_fields]}
+        )
+    if include_data:
+        aggregation += [lookup.serialize() for lookup in included_fields]
     if sort:
         single_sorts = (single_sort.split(":") for single_sort in sort.split(";"))
         sort_query = {field: int(order) for field, order in single_sorts}
     else:
         sort_query = {"_id": -1}
-    dataset_items = dataset_db.find(query).sort(sort_query).skip(offset).limit(limit)
+    aggregation.append({"$sort": sort_query})
+    dataset_items = dataset_db.aggregate(aggregation)
     total_records = dataset_db.count_documents(query)
     return PaginatedListDto(
         [_serialize_object_ids(dataset_item) for dataset_item in dataset_items],
@@ -111,7 +117,12 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
         return _get_data_set_object(
             "projects",
             ["short", "title", "abstract"],
-            ["keywords", "keyTechnologies", "organisations", "projectLeader"],
+            [
+                # Lookup("keywords", "keywords", "keywords", "keywords"),
+                # Lookup("keyTechnologies", "keyTechnologies", "keyTechnologies", "keyTechnologies"),
+                Lookup("organisations", "organisations", "_id", "organisations"),
+                Lookup("organisations", "projectLeader", "_id", "projectLeader"),
+            ],
             dataset_id,
             search,
             includeData,
@@ -132,8 +143,8 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
     ) -> PaginatedListDto[Any]:
         return _get_data_set_object(
             "organisations",
-            ["short", "title", "abstract"],
-            ["keywords", "keyTechnologies", "organisations", "projectLeader"],
+            ["name", "type", "website"],
+            [],
             dataset_id,
             search,
             includeData,
@@ -154,7 +165,7 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
     ) -> PaginatedListDto[Any]:
         return _get_data_set_object(
             "grants",
-            ["short", "title", "abstract"],
+            [],
             [],
             dataset_id,
             search,
