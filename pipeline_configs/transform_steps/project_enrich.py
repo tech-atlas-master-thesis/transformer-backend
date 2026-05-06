@@ -27,7 +27,9 @@ class ProjectEnrichStep(StepConfig):
             orgs = json.loads(project["organisations"])
             project["organisations"] = [ORGANISATION_MAPPING.get(org["organisationName"]) for org in orgs]
             project_leaders = [
-                ORGANISATION_MAPPING.get(org["organisationName"]) for org in orgs if org["role_in_project"]
+                ORGANISATION_MAPPING.get(org["organisationName"])
+                for org in orgs
+                if org["role_in_project"] in ["Konsortialführer", "Einzelantragsteller"]
             ]
             project["projectLeader"] = (
                 None
