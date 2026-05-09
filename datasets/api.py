@@ -1,22 +1,51 @@
+import datetime
+import json
 import re
 from dataclasses import dataclass
 from typing import Optional, List, Any, Annotated
 
 from bson import ObjectId
 from fastapi import FastAPI, HTTPException, Depends, Query
+from starlette.responses import Response
 
 from datasets.dto import DatasetDto
-from pipelineFramework import PaginatedListDto, PageDto, get_fe_db_client, require_all_entitlements, Lookup
+from pipelineFramework import (
+    PaginatedListDto,
+    PageDto,
+    get_fe_db_client,
+    require_all_entitlements,
+    Lookup,
+    custom_json_encoder,
+)
 
 AUTH_REQUIREMENTS_VIEW = require_all_entitlements("tech-atlas:read")
 
 
 @dataclass
-class _DataSetObject:
-    name: str
+class DataSetObject:
     collection: str
     search_fields: List[str]
-    included_fields: List[str]
+    included_fields: List[Lookup]
+
+
+PROJECTS_DATA = DataSetObject(
+    "projects",
+    ["short", "title", "abstract"],
+    [
+        # Lookup("keywords", "keywords", "keywords", "keywords"),
+        # Lookup("keyTechnologies", "keyTechnologies", "keyTechnologies", "keyTechnologies"),
+        Lookup("organisations", "organisations", "_id", "organisations"),
+        Lookup("organisations", "projectLeader", "_id", "projectLeader"),
+    ],
+)
+
+ORGANISATIONS_DATA = DataSetObject(
+    "organisations",
+    ["name", "type", "website"],
+    [],
+)
+
+GRANTS_DATA = []
 
 
 def _serialize_object_ids(obj: Any) -> Any:
@@ -63,6 +92,33 @@ def _get_data_set_object(
         [_serialize_object_ids(dataset_item) for dataset_item in dataset_items],
         PageDto(offset, limit, total_records),
     )
+
+
+def _get_data_set_export(
+    collection: str,
+    search_fields: List[str],
+    included_fields: List[Lookup],
+    dataset_id: str,
+    search: Optional[str] = None,
+    include_data: Optional[bool] = None,
+) -> Response:
+    dataset_db = get_fe_db_client().get_collection(collection)
+    aggregation = [{"$match": {"dataset": ObjectId(dataset_id)}}]
+    if search:
+        aggregation.append(
+            {"$or": [{field: {"$regex": re.escape(search), "$options": "$i"}} for field in search_fields]}
+        )
+    if include_data:
+        aggregation += [lookup.serialize() for lookup in included_fields]
+    dataset_items = dataset_db.aggregate(aggregation)
+    response = Response(
+        json.dumps([*dataset_items], default=custom_json_encoder),
+        media_type="text/json",
+    )
+    response.headers["Content-Disposition"] = (
+        f"inline; filename=DataSetExport_{dataset_id}_{collection}_{search if search else 'full'}_{'incl' if include_data else 'ref'}_{datetime.datetime.now(datetime.UTC).isoformat()}.json"
+    )
+    return response
 
 
 def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
@@ -115,20 +171,31 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
         _=Depends(AUTH_REQUIREMENTS_VIEW),
     ) -> PaginatedListDto[Any]:
         return _get_data_set_object(
-            "projects",
-            ["short", "title", "abstract"],
-            [
-                # Lookup("keywords", "keywords", "keywords", "keywords"),
-                # Lookup("keyTechnologies", "keyTechnologies", "keyTechnologies", "keyTechnologies"),
-                Lookup("organisations", "organisations", "_id", "organisations"),
-                Lookup("organisations", "projectLeader", "_id", "projectLeader"),
-            ],
+            PROJECTS_DATA.collection,
+            PROJECTS_DATA.search_fields,
+            PROJECTS_DATA.included_fields,
             dataset_id,
             search,
             includeData,
             sort,
             limit,
             offset,
+        )
+
+    @app.get(api_base_url + "/datasets/{dataset_id}/projects/export")
+    async def get_project_export(
+        dataset_id: str,
+        search: Optional[str] = None,
+        includeData: Optional[bool] = None,
+        _=Depends(AUTH_REQUIREMENTS_VIEW),
+    ) -> Response:
+        return _get_data_set_export(
+            PROJECTS_DATA.collection,
+            PROJECTS_DATA.search_fields,
+            PROJECTS_DATA.included_fields,
+            dataset_id,
+            search,
+            includeData,
         )
 
     @app.get(api_base_url + "/datasets/{dataset_id}/organizations")
@@ -142,15 +209,31 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
         _=Depends(AUTH_REQUIREMENTS_VIEW),
     ) -> PaginatedListDto[Any]:
         return _get_data_set_object(
-            "organisations",
-            ["name", "type", "website"],
-            [],
+            ORGANISATIONS_DATA.collection,
+            ORGANISATIONS_DATA.search_fields,
+            ORGANISATIONS_DATA.included_fields,
             dataset_id,
             search,
             includeData,
             sort,
             limit,
             offset,
+        )
+
+    @app.get(api_base_url + "/datasets/{dataset_id}/organizations/export")
+    async def get_organization_export(
+        dataset_id: str,
+        search: Optional[str] = None,
+        includeData: Optional[bool] = None,
+        _=Depends(AUTH_REQUIREMENTS_VIEW),
+    ) -> Response:
+        return _get_data_set_export(
+            ORGANISATIONS_DATA.collection,
+            ORGANISATIONS_DATA.search_fields,
+            ORGANISATIONS_DATA.included_fields,
+            dataset_id,
+            search,
+            includeData,
         )
 
     @app.get(api_base_url + "/datasets/{dataset_id}/grants")
@@ -173,4 +256,20 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
             sort,
             limit,
             offset,
+        )
+
+    @app.get(api_base_url + "/datasets/{dataset_id}/grants/export")
+    async def get_grant_export(
+        dataset_id: str,
+        search: Optional[str] = None,
+        includeData: Optional[bool] = None,
+        _=Depends(AUTH_REQUIREMENTS_VIEW),
+    ) -> Response:
+        return _get_data_set_export(
+            "grants",
+            [],
+            [],
+            dataset_id,
+            search,
+            includeData,
         )
