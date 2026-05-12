@@ -28,7 +28,7 @@ class TechnologiesStep(StepConfig):
         field_db = get_fe_db_client().get_collection("fields")
         tech_db = get_fe_db_client().get_collection("technologies")
 
-        field_ids = field_db.insert_many([{**item, "dataset": DATASET} for item in TECH_CONFIG])
+        field_ids = field_db.insert_many([{**item, "projects": 0, "dataset": DATASET} for item in TECH_CONFIG])
 
         techs = []
         for field_id, field in zip(field_ids.inserted_ids, TECH_CONFIG):
@@ -36,6 +36,7 @@ class TechnologiesStep(StepConfig):
                 techs.append(
                     {
                         **tech,
+                        "projects": 0,
                         "field": field_id,
                         "dataset": DATASET,
                     }
