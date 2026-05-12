@@ -16,27 +16,9 @@ class ProjectEnrichStep(StepConfig):
         if results is None:
             results = {}
         PROJECTS = results.get("project_normalize")
-        ORGANISATION_MAPPING: Dict[str, str] = results.get("organisation_database")
-        # TODO: add grants
-        # GRANT_MAPPING: Dict[str, str] = results.get("grant_database")
         if PROJECTS is None:
             raise FileNotFoundError("No scraper data found")
         yield "Data found", EventType.INFO
-
-        for project in PROJECTS:
-            orgs = json.loads(project["organisations"])
-            project["organisations"] = [ORGANISATION_MAPPING.get(org["organisationName"]) for org in orgs]
-            project_leaders = [
-                ORGANISATION_MAPPING.get(org["organisationName"])
-                for org in orgs
-                if org["role_in_project"] in ["Konsortialführer", "Einzelantragsteller"]
-            ]
-            project["projectLeader"] = (
-                None
-                if len(project_leaders) == 0
-                else project_leaders[0] if len(project_leaders) == 1 else project_leaders
-            )
-            project["keywords"] = project["keywords"].split(", ")
 
         yield PROJECTS, EventType.RESULT
 
@@ -53,4 +35,4 @@ class ProjectEnrichStep(StepConfig):
         return LocalisationString("Desc", "Desc")
 
     def dependencies(self) -> Union[List[str], None]:
-        return ["project_normalize", "organisation_database", "grant_database"]
+        return ["project_normalize"]

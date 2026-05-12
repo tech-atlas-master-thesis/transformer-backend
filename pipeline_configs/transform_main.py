@@ -14,6 +14,7 @@ from pipeline_configs.transform_steps.project_extract import ProjectExtractStep
 from pipeline_configs.transform_steps.project_normalize import ProjectNormalizeStep
 from pipeline_configs.transform_steps.project_database import ProjectDatabaseStep
 from pipeline_configs.transform_steps.publish_dataset import PublishDataSetStep
+from pipeline_configs.transform_steps.technologies import TechnologiesStep
 
 TRANSFORMER_PIPELINE = PipelineConfig(
     type="transform_main",
@@ -22,11 +23,19 @@ TRANSFORMER_PIPELINE = PipelineConfig(
         CreateDataSetStep(),
         GetResultFromLatestPipeline(
             "getScraperResults",
-            LocalisationString("Get results from Scraper Pipeline", "Get results from Scraper Pipeline"),
+            LocalisationString("Get results from Scraper Pipeline", "Ergebnisse der scraper Pipeline laden"),
             None,
             "Scraper Pipeline",
             "getDataFFG",
         ),
+        GetResultFromLatestPipeline(
+            "getTechnologyConfiguration",
+            LocalisationString("Get Technology Configuration", "Technologie Konfiguration Laden"),
+            None,
+            "Scraper Pipeline",
+            "getTechnologyConfiguration",
+        ),
+        TechnologiesStep(),
         OrganisationExtractStep(),
         OrganisationNormalizeStep(),
         OrganisationEnrichStep(),
