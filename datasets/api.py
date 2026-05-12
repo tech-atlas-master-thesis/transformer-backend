@@ -102,6 +102,8 @@ def _get_data_set_object(
     else:
         sort_query = {"_id": -1}
     aggregation.append({"$sort": sort_query})
+    aggregation.append({"$skip": offset})
+    aggregation.append({"$limit": limit})
     dataset_items = dataset_db.aggregate(aggregation)
     total_records = dataset_db.count_documents(query)
     return PaginatedListDto(
