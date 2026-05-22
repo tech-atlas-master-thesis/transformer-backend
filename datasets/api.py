@@ -1,10 +1,12 @@
 import datetime
+import io
 import json
 import re
+import zipfile
 from dataclasses import dataclass
 from typing import Optional, List, Any, Annotated, Dict
 
-from bson import ObjectId
+from bson import ObjectId, json_util as bson_util
 from fastapi import FastAPI, HTTPException, Depends, Query
 from starlette.responses import Response
 
@@ -112,14 +114,15 @@ def _get_data_set_object(
     )
 
 
-def _get_data_set_export(
+def _get_dataset_object_export_json(
     collection: str,
     search_fields: List[str],
     included_fields: List[Lookup],
     dataset_id: str,
     search: Optional[str] = None,
     include_data: Optional[bool] = None,
-) -> Response:
+):
+
     dataset_db = get_fe_db_client().get_collection(collection)
     aggregation = [{"$match": {"dataset": ObjectId(dataset_id)}}]
     if search:
@@ -128,9 +131,19 @@ def _get_data_set_export(
         )
     if include_data:
         aggregation += [lookup.serialize() for lookup in included_fields]
-    dataset_items = dataset_db.aggregate(aggregation)
+    return bson_util.dumps([*dataset_db.aggregate(aggregation)])
+
+
+def _get_data_set_export(
+    collection: str,
+    search_fields: List[str],
+    included_fields: List[Lookup],
+    dataset_id: str,
+    search: Optional[str] = None,
+    include_data: Optional[bool] = None,
+) -> Response:
     response = Response(
-        json.dumps([*dataset_items], default=custom_json_encoder),
+        _get_dataset_object_export_json(collection, search_fields, included_fields, dataset_id, search, include_data),
         media_type="text/json",
     )
     response.headers["Content-Disposition"] = (
@@ -178,6 +191,25 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
             raise HTTPException(status_code=404, detail=f"Pipeline '{dataset_id}' not found")
         return DatasetDto.from_entity(dataset)
 
+    @app.get(api_base_url + "/datasets/{dataset_id}/export")
+    def get_full_dataset_export(
+        dataset_id: str,
+        _=Depends(AUTH_REQUIREMENTS_VIEW),
+    ):
+        with io.BytesIO() as zip_buffer:
+            with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+                for dataset_object in OBJECT_CONFIGS.values():
+                    zip_file.writestr(
+                        zipfile.ZipInfo(f"{dataset_object.collection}.json"),
+                        _get_dataset_object_export_json(dataset_object.collection, [], [], dataset_id),
+                    )
+            zip_buffer.seek(0)
+            response = Response(zip_buffer.getvalue(), media_type="application/zip")
+            response.headers["Content-Disposition"] = (
+                f"inline; filename=DataSetFullExport_{dataset_id}_{datetime.datetime.now(datetime.UTC).isoformat()}.zip"
+            )
+            return response
+
     @app.get(api_base_url + "/datasets/{dataset_id}/{object_type}")
     async def get_dataset_object(
         dataset_id: str,
@@ -205,7 +237,7 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
         )
 
     @app.get(api_base_url + "/datasets/{dataset_id}/{object_type}/export")
-    async def get_project_export(
+    async def get_dataset_object_export(
         dataset_id: str,
         object_type: str,
         search: Optional[str] = None,
@@ -223,117 +255,3 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
             search,
             includeData,
         )
-
-    # @app.get(api_base_url + "/datasets/{dataset_id}/projects")
-    # async def get_projects(
-    #     dataset_id: str,
-    #     search: Optional[str] = None,
-    #     includeData: Optional[bool] = None,
-    #     sort: Optional[str] = None,
-    #     limit: int = 20,
-    #     offset: int = 0,
-    #     _=Depends(AUTH_REQUIREMENTS_VIEW),
-    # ) -> PaginatedListDto[Any]:
-    #     return _get_data_set_object(
-    #         PROJECTS_DATA.collection,
-    #         PROJECTS_DATA.search_fields,
-    #         PROJECTS_DATA.included_fields,
-    #         dataset_id,
-    #         search,
-    #         includeData,
-    #         sort,
-    #         limit,
-    #         offset,
-    #     )
-    #
-    # @app.get(api_base_url + "/datasets/{dataset_id}/projects/export")
-    # async def get_project_export(
-    #     dataset_id: str,
-    #     search: Optional[str] = None,
-    #     includeData: Optional[bool] = None,
-    #     _=Depends(AUTH_REQUIREMENTS_VIEW),
-    # ) -> Response:
-    #     return _get_data_set_export(
-    #         PROJECTS_DATA.collection,
-    #         PROJECTS_DATA.search_fields,
-    #         PROJECTS_DATA.included_fields,
-    #         dataset_id,
-    #         search,
-    #         includeData,
-    #     )
-    #
-    # @app.get(api_base_url + "/datasets/{dataset_id}/organizations")
-    # async def get_organizations(
-    #     dataset_id: str,
-    #     search: Optional[str] = None,
-    #     includeData: Optional[bool] = None,
-    #     sort: Optional[str] = None,
-    #     limit: int = 20,
-    #     offset: int = 0,
-    #     _=Depends(AUTH_REQUIREMENTS_VIEW),
-    # ) -> PaginatedListDto[Any]:
-    #     return _get_data_set_object(
-    #         ORGANISATIONS_DATA.collection,
-    #         ORGANISATIONS_DATA.search_fields,
-    #         ORGANISATIONS_DATA.included_fields,
-    #         dataset_id,
-    #         search,
-    #         includeData,
-    #         sort,
-    #         limit,
-    #         offset,
-    #     )
-    #
-    # @app.get(api_base_url + "/datasets/{dataset_id}/organizations/export")
-    # async def get_organization_export(
-    #     dataset_id: str,
-    #     search: Optional[str] = None,
-    #     includeData: Optional[bool] = None,
-    #     _=Depends(AUTH_REQUIREMENTS_VIEW),
-    # ) -> Response:
-    #     return _get_data_set_export(
-    #         ORGANISATIONS_DATA.collection,
-    #         ORGANISATIONS_DATA.search_fields,
-    #         ORGANISATIONS_DATA.included_fields,
-    #         dataset_id,
-    #         search,
-    #         includeData,
-    #     )
-    #
-    # @app.get(api_base_url + "/datasets/{dataset_id}/grants")
-    # async def get_grants(
-    #     dataset_id: str,
-    #     search: Optional[str] = None,
-    #     includeData: Optional[bool] = None,
-    #     sort: Optional[str] = None,
-    #     limit: int = 20,
-    #     offset: int = 0,
-    #     _=Depends(AUTH_REQUIREMENTS_VIEW),
-    # ) -> PaginatedListDto[Any]:
-    #     return _get_data_set_object(
-    #         "grants",
-    #         [],
-    #         [],
-    #         dataset_id,
-    #         search,
-    #         includeData,
-    #         sort,
-    #         limit,
-    #         offset,
-    #     )
-    #
-    # @app.get(api_base_url + "/datasets/{dataset_id}/grants/export")
-    # async def get_grant_export(
-    #     dataset_id: str,
-    #     search: Optional[str] = None,
-    #     includeData: Optional[bool] = None,
-    #     _=Depends(AUTH_REQUIREMENTS_VIEW),
-    # ) -> Response:
-    #     return _get_data_set_export(
-    #         "grants",
-    #         [],
-    #         [],
-    #         dataset_id,
-    #         search,
-    #         includeData,
-    #     )
