@@ -1,4 +1,8 @@
+import json
+import math
 from typing import Optional, Union, List, Dict, Any
+
+import pandas as pd
 
 from pipelineFramework import (
     StepConfig,
@@ -17,8 +21,19 @@ class GrantExtractStep(StepConfig):
         SCRAPER_DATA = results.get("getScraperResults")
         if SCRAPER_DATA is None:
             raise FileNotFoundError("No organisation data found")
-        yield "Data found", EventType.INFO
-        yield SCRAPER_DATA, EventType.RESULT
+        grants = []
+        pd.DataFrame().itertuples()
+        for _, grant_data in SCRAPER_DATA.iterrows():
+            new_grant = {
+                "name": grant_data["bidding"],
+                "programme": grant_data["programme"],
+                "projects": 0,
+            }
+            if any(new_grant == grant for grant in grants):
+                continue
+            grants.append(new_grant)
+        yield f"Extracted {len(grants)} unique grants", EventType.INFO
+        yield grants, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []

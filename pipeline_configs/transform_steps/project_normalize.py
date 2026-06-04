@@ -24,12 +24,12 @@ class ProjectNormalizeStep(StepConfig):
         if PROJECTS is None:
             raise FileNotFoundError("No scraper data found")
         ORGANISATION_MAPPING: Dict[str, str] = results.get("organisation_database")
-        # TODO: add grants
-        # GRANT_MAPPING: Dict[str, str] = results.get("grant_database")
+        GRANT_MAPPING: Dict[str, str] = results.get("grant_database")
         yield "Data found", EventType.INFO
 
         self.add_technology_ids(PROJECTS, TECHNOLOGIES)
         self.add_organisations(PROJECTS, ORGANISATION_MAPPING)
+        self.add_grants(PROJECTS, GRANT_MAPPING)
         self.parse_keywords(PROJECTS)
 
         yield PROJECTS, EventType.RESULT
@@ -66,6 +66,17 @@ class ProjectNormalizeStep(StepConfig):
             project["keyTechnologies"] = tech_ids
         self.save_counts_to_database(tech_count, fields_count)
 
+    def add_grants(self, projects: List[Dict[str, Any]], grants: Dict[str, str]) -> None:
+        grant_count = defaultdict(lambda: 0)
+        for project in projects:
+            grant = grants.get(project["bidding"])
+            project["grant"] = grant
+            del project["bidding"]
+            del project["programme"]
+            if grant is not None:
+                grant_count[grant] += 1
+        self.save_grant_counts_to_database(grant_count)
+
     def save_counts_to_database(self, tech_count: Dict[str, int], field_count: Dict[str, int]) -> None:
         fields_db = get_fe_db_client().get_collection("fields")
         techs_db = get_fe_db_client().get_collection("technologies")
@@ -74,6 +85,12 @@ class ProjectNormalizeStep(StepConfig):
             fields_db.update_one({"_id": tech_id}, {"$set": {"projects": count}})
         for tech_id, count in tech_count.items():
             techs_db.update_one({"_id": tech_id}, {"$set": {"projects": count}})
+
+    def save_grant_counts_to_database(self, grant_count: Dict[str, int]) -> None:
+        grant_db = get_fe_db_client().get_collection("grants")
+
+        for grant_id, count in grant_count.items():
+            grant_db.update_one({"_id": grant_id}, {"$set": {"projects": count}})
 
     def user_config(self) -> List[StepUserConfig]:
         return []

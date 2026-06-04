@@ -29,6 +29,8 @@ class ProjectExtractStep(StepConfig):
                 "short",
                 "title",
                 "abstract",
+                "bidding",
+                "programme",
                 "start",
                 "end",
                 "status",

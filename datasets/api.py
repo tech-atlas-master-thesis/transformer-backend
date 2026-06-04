@@ -38,6 +38,7 @@ PROJECTS_DATA = DataSetObject(
         # Lookup("keyTechnologies", "keyTechnologies", "keyTechnologies", "keyTechnologies"),
         Lookup("organisations", "organisations", "_id", "organisations"),
         Lookup("organisations", "projectLeader", "_id", "projectLeader"),
+        Lookup("grants", "grant", "_id", "grant"),
     ],
 )
 

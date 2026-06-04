@@ -7,6 +7,7 @@ from pipelineFramework import (
     LocalisationString,
     StepUserConfig,
     EventType,
+    get_fe_db_client,
 )
 
 
@@ -15,10 +16,15 @@ class GrantDatabaseStep(StepConfig):
         if results is None:
             results = {}
         GRANTS = results.get("grant_enrich")
+        DATASET = results.get("create_dataset")
         if GRANTS is None:
-            raise FileNotFoundError("No organisation data found")
+            raise FileNotFoundError("No grant data found")
         yield "Data found", EventType.INFO
-        yield GRANTS, EventType.RESULT
+
+        project_db = get_fe_db_client().get_collection("grants")
+
+        ids = project_db.insert_many([{**item, "dataset": DATASET} for item in GRANTS])
+        yield dict(zip((grant["name"] for grant in GRANTS), ids.inserted_ids)), EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []
