@@ -31,10 +31,12 @@ class OrganisationDatabaseStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "organisation_database"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Save Organisation Data to Database", "Organisationen Daten in Datenbank speichern")
 
     def description(self) -> LocalisationStringType:

@@ -23,10 +23,12 @@ class GrantNormalizeStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "grant_normalize"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Normalize Grant Data", "Förderdaten normalisieren")
 
     def description(self) -> LocalisationStringType:

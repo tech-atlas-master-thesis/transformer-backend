@@ -8,29 +8,38 @@ from pipelineFramework import (
     StepUserConfig,
     EventType,
 )
+from pipeline_configs.transform_steps.grant_normalize import GrantNormalizeStep
+from pipeline_configs.transform_steps.programmes import ProgrammesDatabaseStep
 
 
 class GrantEnrichStep(StepConfig):
     async def run(self, user_config: Optional[UserStepConfig], results: Optional[Dict[str, Any]] = None, **_):
         if results is None:
             results = {}
-        GRANTS = results.get("grant_normalize")
+        GRANTS = results.get(GrantNormalizeStep.name())
+        PROGRAMMES = results.get(ProgrammesDatabaseStep.name())
         if GRANTS is None:
             raise FileNotFoundError("No organisation data found")
         yield "Data found", EventType.INFO
+
+        for grant in GRANTS:
+            grant["programme"] = PROGRAMMES.get(grant["programme"])
+
         yield GRANTS, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "grant_enrich"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Enrich Grant data", "Förderdaten anreichern")
 
     def description(self) -> LocalisationStringType:
         return LocalisationString("Desc", "Desc")
 
     def dependencies(self) -> Union[List[str], None]:
-        return ["grant_normalize"]
+        return [GrantNormalizeStep.name(), ProgrammesDatabaseStep.name()]

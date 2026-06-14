@@ -35,10 +35,12 @@ class PublishDataSetStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "publish_dataset"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Publish DataSet", "Datenset veröffentlichen")
 
     def description(self) -> LocalisationStringType:

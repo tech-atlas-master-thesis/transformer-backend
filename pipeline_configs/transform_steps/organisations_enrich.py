@@ -23,10 +23,12 @@ class OrganisationEnrichStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "organisation_enrich"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Enrich Organisation Data", "Organisationen mit Daten anreichern")
 
     def description(self) -> LocalisationStringType:

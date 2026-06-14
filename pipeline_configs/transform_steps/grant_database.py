@@ -29,10 +29,12 @@ class GrantDatabaseStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "grant_database"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Save Grant Data to Database", "Förderdaten in Datenbank speichern")
 
     def description(self) -> LocalisationStringType:

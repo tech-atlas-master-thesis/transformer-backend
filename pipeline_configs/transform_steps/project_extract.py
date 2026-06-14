@@ -44,10 +44,12 @@ class ProjectExtractStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "project_extract"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Extract Project Data", "Projekt Daten Extrahieren")
 
     def description(self) -> LocalisationStringType:

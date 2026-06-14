@@ -30,10 +30,12 @@ class ProjectDatabaseStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "project_database"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Save Project Data to Database", "Projekt Daten in Datenbank speichern")
 
     def description(self) -> LocalisationStringType:

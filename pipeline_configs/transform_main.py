@@ -9,11 +9,18 @@ from pipeline_configs.transform_steps.organisations_database import Organisation
 from pipeline_configs.transform_steps.organisations_enrich import OrganisationEnrichStep
 from pipeline_configs.transform_steps.organisations_extract import OrganisationExtractStep
 from pipeline_configs.transform_steps.organisations_normalize import OrganisationNormalizeStep
+from pipeline_configs.transform_steps.programmes import (
+    ProgrammeExtractStep,
+    ProgrammeNormalizeStep,
+    ProgrammeEnrichStep,
+    ProgrammesDatabaseStep,
+)
 from pipeline_configs.transform_steps.project_enrich import ProjectEnrichStep
 from pipeline_configs.transform_steps.project_extract import ProjectExtractStep
 from pipeline_configs.transform_steps.project_normalize import ProjectNormalizeStep
 from pipeline_configs.transform_steps.project_database import ProjectDatabaseStep
 from pipeline_configs.transform_steps.publish_dataset import PublishDataSetStep
+from pipeline_configs.transform_steps.scraper import GetScraperResults, GetTechnologyConfiguration
 from pipeline_configs.transform_steps.technologies import TechnologiesStep
 
 TRANSFORMER_PIPELINE = PipelineConfig(
@@ -21,26 +28,18 @@ TRANSFORMER_PIPELINE = PipelineConfig(
     display_name=LocalisationString("Transformer Pipeline", "Transformer Pipeline"),
     steps=[
         CreateDataSetStep(),
-        GetResultFromLatestPipeline(
-            "getScraperResults",
-            LocalisationString("Get results from Scraper Pipeline", "Ergebnisse der scraper Pipeline laden"),
-            None,
-            "Scraper Pipeline",
-            "getDataFFG",
-        ),
-        GetResultFromLatestPipeline(
-            "getTechnologyConfiguration",
-            LocalisationString("Get Technology Configuration", "Technologie Konfiguration Laden"),
-            None,
-            "Scraper Pipeline",
-            "getTechnologyConfiguration",
-        ),
+        GetScraperResults,
+        GetTechnologyConfiguration,
         TechnologiesStep(),
         OrganisationExtractStep(),
         OrganisationNormalizeStep(),
         OrganisationEnrichStep(),
         OrganisationDatabaseStep(),
         GrantExtractStep(),
+        ProgrammeExtractStep(),
+        ProgrammeNormalizeStep(),
+        ProgrammeEnrichStep(),
+        ProgrammesDatabaseStep(),
         GrantNormalizeStep(),
         GrantEnrichStep(),
         GrantDatabaseStep(),

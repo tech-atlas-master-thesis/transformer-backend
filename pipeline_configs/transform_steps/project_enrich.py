@@ -25,10 +25,12 @@ class ProjectEnrichStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "project_enrich"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Enrich Project Data", "Projekt Daten Anreichern")
 
     def description(self) -> LocalisationStringType:

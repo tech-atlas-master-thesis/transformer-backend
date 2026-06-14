@@ -38,10 +38,12 @@ class GrantExtractStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "grant_extract"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Extract Grant Data", "Förderdaten extrahieren")
 
     def description(self) -> LocalisationStringType:

@@ -23,10 +23,12 @@ class OrganisationNormalizeStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "organisation_normalize"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Normalize Organisation Data", "Organisationen normalisieren")
 
     def description(self) -> LocalisationStringType:

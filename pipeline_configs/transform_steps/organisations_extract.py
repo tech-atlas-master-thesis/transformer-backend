@@ -49,10 +49,12 @@ class OrganisationExtractStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "organisation_extract"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Extract Organisation Data", "Organisationen extrahieren")
 
     def description(self) -> LocalisationStringType:

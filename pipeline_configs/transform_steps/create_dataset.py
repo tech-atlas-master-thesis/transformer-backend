@@ -22,10 +22,12 @@ class CreateDataSetStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "create_dataset"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Create DataSet", "Datenset erstellen")
 
     def description(self) -> LocalisationStringType:

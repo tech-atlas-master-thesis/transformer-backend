@@ -50,10 +50,12 @@ class TechnologiesStep(StepConfig):
     def user_config(self) -> List[StepUserConfig]:
         return []
 
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "technologies"
 
-    def display_name(self) -> LocalisationStringType:
+    @staticmethod
+    def display_name() -> LocalisationStringType:
         return LocalisationString("Save Technologies to Database", "Technologies in Datenbank speichern")
 
     def description(self) -> LocalisationStringType:
