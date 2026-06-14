@@ -199,6 +199,11 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
     ):
         with io.BytesIO() as zip_buffer:
             with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+                dataset_db = get_fe_db_client().get_collection("datasets")
+                dataset = dataset_db.find_one({"_id": ObjectId(dataset_id)})
+
+                zip_file.writestr(zipfile.ZipInfo("datasets.json"), bson_util.dumps([dataset]))
+
                 for dataset_object in OBJECT_CONFIGS.values():
                     zip_file.writestr(
                         zipfile.ZipInfo(f"{dataset_object.collection}.json"),
