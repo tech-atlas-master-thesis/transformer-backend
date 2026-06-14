@@ -13,12 +13,13 @@ from pipelineFramework import (
 )
 from pipelineFramework.server.dto import AuditInfoDto, UserDto
 from pipelineFramework.server.db.helper import get_fe_db_client
+from pipeline_configs.transform_steps.create_dataset import CreateDataSetStep
 
 
 class PublishDataSetStep(StepConfig):
     async def run(self, pipeline: Pipeline, results, **_):
         datasets = get_fe_db_client().get_collection("datasets")
-        DATASET_ID: ObjectId = results.get("create_dataset")
+        DATASET_ID: ObjectId = results.get(CreateDataSetStep.name())
         yield f"Publishing DataSet with ID {DATASET_ID}", EventType.INFO
         dataset = datasets.insert_one(
             {
@@ -47,4 +48,4 @@ class PublishDataSetStep(StepConfig):
         return LocalisationString("Desc", "Desc")
 
     def dependencies(self) -> Union[List[str], None]:
-        return ["create_dataset", "project_database", "organisation_database", "grant_database"]
+        return [CreateDataSetStep.name()]

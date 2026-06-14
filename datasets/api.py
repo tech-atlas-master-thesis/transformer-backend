@@ -50,11 +50,17 @@ ORGANISATIONS_DATA = DataSetObject(
 
 GRANTS_DATA = DataSetObject(
     "grants",
-    [],
+    ["name"],
+    [Lookup("programmes", "programme", "_id", "programme")],
+)
+
+PROGRAMMES_DATA = DataSetObject(
+    "programmes",
+    ["name"],
     [],
 )
 
-TECHNOLOGIES_DATA = DataSetObject("technologies", ["label", "short"], [Lookup("field", "field", "_id", "fields")])
+TECHNOLOGIES_DATA = DataSetObject("technologies", ["label", "short"], [Lookup("fields", "field", "_id", "field")])
 
 FIELD_DATA = DataSetObject("fields", ["label", "short"], [])
 
@@ -62,6 +68,7 @@ OBJECT_CONFIGS: Dict[str, DataSetObject] = {
     "projects": PROJECTS_DATA,
     "organizations": ORGANISATIONS_DATA,
     "grants": GRANTS_DATA,
+    "programmes": PROGRAMMES_DATA,
     "technologies": TECHNOLOGIES_DATA,
     "fields": FIELD_DATA,
 }

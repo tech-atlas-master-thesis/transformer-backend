@@ -9,11 +9,19 @@ from pipeline_configs.transform_steps.organisations_database import Organisation
 from pipeline_configs.transform_steps.organisations_enrich import OrganisationEnrichStep
 from pipeline_configs.transform_steps.organisations_extract import OrganisationExtractStep
 from pipeline_configs.transform_steps.organisations_normalize import OrganisationNormalizeStep
+from pipeline_configs.transform_steps.prefill_counts import (
+    PrefillTechnologyCounts,
+    PrefillFieldCounts,
+    PrefillGrantCounts,
+    PrefillProgrammeCounts,
+    PrefillStepCollection,
+)
 from pipeline_configs.transform_steps.programmes import (
     ProgrammeExtractStep,
     ProgrammeNormalizeStep,
     ProgrammeEnrichStep,
     ProgrammesDatabaseStep,
+    ProgrammeStepCollection,
 )
 from pipeline_configs.transform_steps.project_enrich import ProjectEnrichStep
 from pipeline_configs.transform_steps.project_extract import ProjectExtractStep
@@ -36,10 +44,7 @@ TRANSFORMER_PIPELINE = PipelineConfig(
         OrganisationEnrichStep(),
         OrganisationDatabaseStep(),
         GrantExtractStep(),
-        ProgrammeExtractStep(),
-        ProgrammeNormalizeStep(),
-        ProgrammeEnrichStep(),
-        ProgrammesDatabaseStep(),
+        *ProgrammeStepCollection,
         GrantNormalizeStep(),
         GrantEnrichStep(),
         GrantDatabaseStep(),
@@ -47,6 +52,7 @@ TRANSFORMER_PIPELINE = PipelineConfig(
         ProjectNormalizeStep(),
         ProjectEnrichStep(),
         ProjectDatabaseStep(),
+        *PrefillStepCollection,
         PublishDataSetStep(),
     ],
     parallelize=True,

@@ -1,16 +1,3 @@
-from typing import Optional, Dict, Any, List, Union
-
-import pandas as pd
-
-from pipelineFramework import (
-    StepConfig,
-    UserStepConfig,
-    EventType,
-    StepUserConfig,
-    get_fe_db_client,
-    LocalisationStringType,
-    LocalisationString,
-)
 from typing import Optional, Union, List, Dict, Any
 
 from pipelineFramework import (
@@ -21,9 +8,12 @@ from pipelineFramework import (
     StepUserConfig,
     EventType,
 )
+from pipelineFramework import (
+    get_fe_db_client,
+)
 from pipeline_configs.transform_steps.create_dataset import CreateDataSetStep
 from pipeline_configs.transform_steps.grant_extract import GrantExtractStep
-from pipeline_configs.transform_steps.scraper import GetScraperResults, GetTechnologyConfiguration
+from pipeline_configs.transform_steps.scraper import GetTechnologyConfiguration
 
 
 class ProgrammeExtractStep(StepConfig):
@@ -48,7 +38,7 @@ class ProgrammeExtractStep(StepConfig):
 
     @staticmethod
     def display_name() -> LocalisationStringType:
-        return LocalisationString("Extract Programme Data", "Förderdaten extrahieren")
+        return LocalisationString("Extract Grant Programme Data", "Förderprogrammdaten extrahieren")
 
     def description(self) -> LocalisationStringType:
         return LocalisationString("Desc", "Desc")
@@ -76,7 +66,7 @@ class ProgrammeNormalizeStep(StepConfig):
 
     @staticmethod
     def display_name() -> LocalisationStringType:
-        return LocalisationString("Normalize Programme Data", "Förderdaten normalisieren")
+        return LocalisationString("Normalize Grant Programme Data", "Förderprogrammdaten normalisieren")
 
     def description(self) -> LocalisationStringType:
         return LocalisationString("Desc", "Desc")
@@ -107,7 +97,7 @@ class ProgrammeEnrichStep(StepConfig):
 
     @staticmethod
     def display_name() -> LocalisationStringType:
-        return LocalisationString("Enrich Programme data", "Förderdaten anreichern")
+        return LocalisationString("Enrich Grant Programme data", "Förderprogrammdaten anreichern")
 
     def description(self) -> LocalisationStringType:
         return LocalisationString("Desc", "Desc")
@@ -140,10 +130,18 @@ class ProgrammesDatabaseStep(StepConfig):
 
     @staticmethod
     def display_name() -> LocalisationStringType:
-        return LocalisationString("Save Programme Data to Database", "Förderdaten in Datenbank speichern")
+        return LocalisationString("Save Grant Programme Data to Database", "Förderprogramme in Datenbank speichern")
 
     def description(self) -> LocalisationStringType:
         return LocalisationString("Desc", "Desc")
 
     def dependencies(self) -> Union[List[str], None]:
         return [ProgrammeEnrichStep.name(), CreateDataSetStep.name()]
+
+
+ProgrammeStepCollection = [
+    ProgrammeExtractStep(),
+    ProgrammeNormalizeStep(),
+    ProgrammeEnrichStep(),
+    ProgrammesDatabaseStep(),
+]
