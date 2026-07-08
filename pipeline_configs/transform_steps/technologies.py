@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Optional, Union, List, Dict, Any
 
 from bson import ObjectId
@@ -28,24 +29,24 @@ class TechnologiesStep(StepConfig):
         field_db = get_fe_db_client().get_collection("fields")
         tech_db = get_fe_db_client().get_collection("technologies")
 
+        techs_flat = [tech for field in TECH_CONFIG for tech in field["technologies"]]
+
+        tech_ids = tech_db.insert_many([{**item, "projects": 0, "dataset": DATASET} for item in techs_flat])
+        tech_id_map = {tech["label"]: tech_id for tech, tech_id in zip(techs_flat, tech_ids.inserted_ids)}
+
+        fields = deepcopy(TECH_CONFIG)
+
+        for field in fields:
+            field["technologies"] = [tech_id_map[tech["label"]] for tech in field["technologies"]]
+
         field_ids = field_db.insert_many([{**item, "projects": 0, "dataset": DATASET} for item in TECH_CONFIG])
 
-        techs = []
-        for field_id, field in zip(field_ids.inserted_ids, TECH_CONFIG):
-            for tech in field.get("technologies", []):
-                techs.append(
-                    {
-                        **tech,
-                        "projects": 0,
-                        "field": field_id,
-                        "dataset": DATASET,
-                    }
-                )
-        tech_ids = tech_db.insert_many(techs)
+        for field, field_id in zip(fields, field_ids.inserted_ids):
+            tech_db.update_many(
+                {"dataset": DATASET, "_id": {"$in": field["technologies"]}}, {"$set": {"field": field_id}}
+            )
 
-        yield dict(
-            zip((tech["label"] for tech in techs), zip(tech_ids.inserted_ids, [t["field"] for t in techs]))
-        ), EventType.RESULT
+        yield tech_id_map, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []

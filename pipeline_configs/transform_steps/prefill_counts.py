@@ -33,10 +33,10 @@ class PrefillTechnologyCounts(StepConfig):
 
         tech_db = get_fe_db_client().get_collection("technologies")
 
-        for grant_id, count in tech_counts.items():
-            tech_db.update_one({"_id": grant_id}, {"$set": {"projects": count}})
+        for tech_id, count in tech_counts.items():
+            tech_db.update_one({"_id": tech_id}, {"$set": {"projects": count}})
 
-        yield tech_counts, EventType.RESULT
+        yield {str(tech_id): tech_count for tech_id, tech_count in tech_counts.items()}, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []
@@ -69,6 +69,9 @@ class PrefillFieldCounts(StepConfig):
 
         fields_count = defaultdict(lambda: 0)
         for tech in techs:
+            if "field" not in tech:
+                yield f"Not field found for Technology {tech['label']}. Maybe the Technology has been added twice?", EventType.WARNING
+                continue
             field = tech["field"]
             projects = tech["projects"]
             if projects is not None:
@@ -79,7 +82,7 @@ class PrefillFieldCounts(StepConfig):
         for field_id, count in fields_count.items():
             field_db.update_one({"_id": field_id}, {"$set": {"projects": count}})
 
-        yield fields_count, EventType.RESULT
+        yield {str(field_id): field_count for field_id, field_count in fields_count.items()}, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []
@@ -119,7 +122,7 @@ class PrefillGrantCounts(StepConfig):
         for grant_id, count in grant_count.items():
             grant_db.update_one({"_id": grant_id}, {"$set": {"projects": count}})
 
-        yield grant_count, EventType.RESULT
+        yield {str(grant_id): grant_count for grant_id, grant_count in grant_count.items()}, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []
@@ -162,7 +165,9 @@ class PrefillProgrammeCounts(StepConfig):
         for programme_id, count in programmes_count.items():
             programme_db.update_one({"_id": programme_id}, {"$set": {"projects": count}})
 
-        yield programmes_count, EventType.RESULT
+        yield {
+            str(programme_id): programme_count for programme_id, programme_count in programmes_count.items()
+        }, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []
