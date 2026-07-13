@@ -36,7 +36,7 @@ TRANSFORMER_PIPELINE = PipelineConfig(
     display_name=LocalisationString("Transformer Pipeline", "Transformer Pipeline"),
     steps=[
         CreateDataSetStep(),
-        GetScraperResults,
+        GetScraperResults(),
         GetTechnologyConfiguration,
         TechnologiesStep(),
         OrganisationExtractStep(),

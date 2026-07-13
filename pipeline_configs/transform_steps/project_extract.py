@@ -11,6 +11,7 @@ from pipelineFramework import (
     StepUserConfig,
     EventType,
 )
+from pipeline_configs.transform_steps.scraper import GetScraperResults
 
 
 class ProjectExtractStep(StepConfig):
@@ -22,23 +23,24 @@ class ProjectExtractStep(StepConfig):
             raise FileNotFoundError("No scraper data found")
         yield "Data found", EventType.INFO
 
-        print(SCRAPER_DATA.columns)
-        projects = SCRAPER_DATA[
-            [
-                "externalId",
-                "short",
-                "title",
-                "abstract",
-                "bidding",
-                "programme",
-                "start",
-                "end",
-                "status",
-                "keywords",
-                "keyTechnologies",
-                "organisations",
-            ]
-        ].to_dict("records")
+        RELEVANT_COLUMNS = [
+            "externalId",
+            "uri",
+            "short",
+            "title",
+            "abstract",
+            "bidding",
+            "programme",
+            "start",
+            "end",
+            "status",
+            "keywords",
+            "keyTechnologies",
+            "organisations",
+            "data_source",
+        ]
+
+        projects = SCRAPER_DATA[RELEVANT_COLUMNS].to_dict("records")
         yield projects, EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
@@ -56,4 +58,4 @@ class ProjectExtractStep(StepConfig):
         return LocalisationString("Desc", "Desc")
 
     def dependencies(self) -> Union[List[str], None]:
-        return ["getScraperResults"]
+        return [GetScraperResults.name()]

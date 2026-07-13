@@ -14,6 +14,10 @@ from pipelineFramework import (
 from pipelineFramework.server.dto import AuditInfoDto, UserDto
 from pipelineFramework.server.db.helper import get_fe_db_client
 from pipeline_configs.transform_steps.create_dataset import CreateDataSetStep
+from pipeline_configs.transform_steps.grant_database import GrantDatabaseStep
+from pipeline_configs.transform_steps.organisations_database import OrganisationDatabaseStep
+from pipeline_configs.transform_steps.prefill_counts import PrefillProgrammeCounts
+from pipeline_configs.transform_steps.project_database import ProjectDatabaseStep
 
 
 class PublishDataSetStep(StepConfig):
@@ -48,4 +52,10 @@ class PublishDataSetStep(StepConfig):
         return LocalisationString("Desc", "Desc")
 
     def dependencies(self) -> Union[List[str], None]:
-        return [CreateDataSetStep.name()]
+        return [
+            CreateDataSetStep.name(),
+            PrefillProgrammeCounts.name(),
+            ProjectDatabaseStep.name(),
+            OrganisationDatabaseStep.name(),
+            GrantDatabaseStep.name(),
+        ]

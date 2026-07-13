@@ -12,6 +12,7 @@ from pipelineFramework import (
     StepUserConfig,
     EventType,
 )
+from pipeline_configs.transform_steps.scraper import GetScraperResults
 
 
 class GrantExtractStep(StepConfig):
@@ -50,4 +51,4 @@ class GrantExtractStep(StepConfig):
         return LocalisationString("Desc", "Desc")
 
     def dependencies(self) -> Union[List[str], None]:
-        return ["getScraperResults"]
+        return [GetScraperResults.name()]
