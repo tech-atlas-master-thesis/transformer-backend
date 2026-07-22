@@ -39,7 +39,7 @@ class TechnologiesStep(StepConfig):
         for field in fields:
             field["technologies"] = [tech_id_map[tech["label"]] for tech in field["technologies"]]
 
-        field_ids = field_db.insert_many([{**item, "projects": 0, "dataset": DATASET} for item in TECH_CONFIG])
+        field_ids = field_db.insert_many([{**item, "projects": 0, "dataset": DATASET} for item in fields])
 
         for field, field_id in zip(fields, field_ids.inserted_ids):
             tech_db.update_many(
