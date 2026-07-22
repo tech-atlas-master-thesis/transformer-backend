@@ -40,6 +40,10 @@ class ProjectExtractStep(StepConfig):
             "data_source",
         ]
 
+        for column in RELEVANT_COLUMNS:
+            if column not in SCRAPER_DATA.columns:
+                SCRAPER_DATA[column] = None
+
         projects = SCRAPER_DATA[RELEVANT_COLUMNS].to_dict("records")
         yield projects, EventType.RESULT
 

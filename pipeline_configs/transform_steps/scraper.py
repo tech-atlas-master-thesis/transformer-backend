@@ -39,8 +39,8 @@ class GetScraperResults(StepConfig):
         FFG_STEP = user_config.get("FFG_STEP")
         FWF_STEP = user_config.get("FWF_STEP")
 
-        ffg_results = await get_pipeline_results(PIPELINE_NAME, FFG_STEP)
-        fwf_results = await get_pipeline_results(PIPELINE_NAME, FWF_STEP)
+        ffg_results = (await get_pipeline_results(PIPELINE_NAME, FFG_STEP)) if FFG_STEP else pd.DataFrame()
+        fwf_results = (await get_pipeline_results(PIPELINE_NAME, FWF_STEP)) if FWF_STEP else pd.DataFrame()
         if ffg_results is None:
             raise FileNotFoundError(f'No result returned for step "{FFG_STEP}" in pipeline "{PIPELINE_NAME}" found')
         if fwf_results is None:
@@ -75,6 +75,7 @@ class GetScraperResults(StepConfig):
                 StepUserConfig.StepUserConfigType.STEP,
                 self.DEFAULT_FFG_STEP_NAME,
                 pipelineType="scraper_main",
+                required=False,
             ),
             StepUserConfig(
                 "FWF_STEP",
@@ -83,6 +84,7 @@ class GetScraperResults(StepConfig):
                 StepUserConfig.StepUserConfigType.STEP,
                 self.DEFAULT_FWF_STEP_NAME,
                 pipelineType="scraper_main",
+                required=False,
             ),
         ]
 

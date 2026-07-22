@@ -25,8 +25,8 @@ class OrganisationDatabaseStep(StepConfig):
 
         project_db = get_fe_db_client().get_collection("organisations")
 
-        ids = project_db.insert_many([{**item, "dataset": DATASET} for item in ORGANISATIONS])
-        yield dict(zip((org["name"] for org in ORGANISATIONS), ids.inserted_ids)), EventType.RESULT
+        ids = project_db.insert_many([{**item, "dataset": DATASET} for item in ORGANISATIONS.values()])
+        yield dict(zip(ORGANISATIONS.keys(), ids.inserted_ids)), EventType.RESULT
 
     def user_config(self) -> List[StepUserConfig]:
         return []
