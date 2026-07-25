@@ -1,9 +1,9 @@
 import datetime
 import io
-import json
 import re
 import zipfile
 from dataclasses import dataclass
+from http import HTTPStatus
 from typing import Optional, List, Any, Annotated, Dict
 
 from bson import ObjectId, json_util as bson_util
@@ -17,8 +17,8 @@ from pipelineFramework import (
     get_fe_db_client,
     require_all_entitlements,
     Lookup,
-    custom_json_encoder,
 )
+from pipelineFramework.server.api.pipeline_api import AUTH_REQUIREMENTS_EDIT
 
 AUTH_REQUIREMENTS_VIEW = require_all_entitlements("tech-atlas:read")
 
@@ -169,7 +169,7 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
         limit: int = 20,
         offset: int = 0,
         _=Depends(AUTH_REQUIREMENTS_VIEW),
-    ):
+    ) -> PaginatedListDto[DatasetDto]:
         dataset_db = get_fe_db_client().get_collection("datasets")
         query = {}
         if pipelineType:
@@ -191,13 +191,50 @@ def add_dataset_endpoints(app: FastAPI, api_base_url: str) -> None:
     async def get_dataset(
         dataset_id: str,
         _=Depends(AUTH_REQUIREMENTS_VIEW),
-    ):
+    ) -> DatasetDto:
         dataset_db = get_fe_db_client().get_collection("datasets")
         dataset = dataset_db.find_one({"_id": ObjectId(dataset_id)})
 
         if not dataset:
             raise HTTPException(status_code=404, detail=f"Pipeline '{dataset_id}' not found")
         return DatasetDto.from_entity(dataset)
+
+    @app.put(api_base_url + "/datasets/{dataset_id}")
+    async def update_dataset(
+        dataset_id: str,
+        body: DatasetDto,
+        _=Depends(AUTH_REQUIREMENTS_EDIT),
+    ) -> DatasetDto:
+        dataset_db = get_fe_db_client().get_collection("datasets")
+        result = dataset_db.update_one(
+            {"_id": ObjectId(dataset_id)},
+            {
+                "$set": {
+                    "pipelineType": body.pipelineType,
+                    "pipelineName": body.pipelineName,
+                    "active": body.active,
+                }
+            },
+        )
+
+        if not result.acknowledged or result.modified_count != 1:
+            raise HTTPException(status_code=404, detail=f"Pipeline '{dataset_id}' not found")
+
+        dataset = dataset_db.find_one({"_id": ObjectId(dataset_id)})
+        if not dataset:
+            raise HTTPException(status_code=404, detail=f"Pipeline '{dataset_id}' not found")
+        return DatasetDto.from_entity(dataset)
+
+    @app.delete(api_base_url + "/datasets/{dataset_id}", status_code=HTTPStatus.NO_CONTENT)
+    async def update_dataset(
+        dataset_id: str,
+        _=Depends(AUTH_REQUIREMENTS_EDIT),
+    ):
+        dataset_db = get_fe_db_client().get_collection("datasets")
+        result = dataset_db.delete_one({"_id": ObjectId(dataset_id)})
+
+        if not result.acknowledged or result.deleted_count != 1:
+            raise HTTPException(status_code=404, detail=f"Pipeline '{dataset_id}' not found")
 
     @app.get(api_base_url + "/datasets/{dataset_id}/export")
     def get_full_dataset_export(

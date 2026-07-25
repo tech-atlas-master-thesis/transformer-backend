@@ -17,10 +17,11 @@ def _get(obj: Dict[str, Any], key: str, transformer: Optional[Callable[[Any], An
 
 @dataclass
 class DatasetDto:
-    id: ObjectId
-    pipeline: ObjectId
+    id: str
+    pipeline: str
     pipelineType: str
     pipelineName: str
+    active: bool
     created: AuditInfoDto
 
     @classmethod
@@ -30,5 +31,16 @@ class DatasetDto:
             _get(entity, "pipeline", str),
             _get(entity, "pipelineType"),
             _get(entity, "pipelineName"),
+            _get(entity, "active", bool),
             _get(entity, "created"),
         )
+
+    def to_entity(self) -> Dict:
+        return {
+            "_id": ObjectId(self.id),
+            "pipeline": ObjectId(self.pipeline),
+            "pipelineType": self.pipelineType,
+            "pipelineName": self.pipelineName,
+            "active": self.active,
+            "created": self.created,
+        }
