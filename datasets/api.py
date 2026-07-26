@@ -100,10 +100,9 @@ def _get_data_set_object(
     aggregation = [{"$match": {"dataset": ObjectId(dataset_id)}}]
     query["dataset"] = ObjectId(dataset_id)
     if search:
-        query["$or"] = [{field: {"$regex": re.escape(search), "$options": "$i"}} for field in search_fields]
-        aggregation.append(
-            {"$or": [{field: {"$regex": re.escape(search), "$options": "$i"}} for field in search_fields]}
-        )
+        matcher = [{field: {"$regex": re.escape(search), "$options": "i"}} for field in search_fields]
+        query["$or"] = matcher
+        aggregation.append({"$match": {"$or": matcher}})
     if include_data:
         aggregation += [lookup.serialize() for lookup in included_fields]
     if sort:
