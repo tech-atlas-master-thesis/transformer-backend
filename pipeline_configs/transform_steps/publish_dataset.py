@@ -31,6 +31,7 @@ class PublishDataSetStep(StepConfig):
                 "pipelineType": pipeline.type,
                 "pipeline": pipeline.id,
                 "pipelineName": pipeline.name,
+                "active": True,
                 "created": AuditInfoDto(pipeline.created.by, datetime.datetime.now(datetime.UTC)).serialize(),
             }
         )
