@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from datasets import add_dataset_endpoints
+from middleware.requestCancelledMiddleware import RequestCancelledMiddleware
 from pipelineFramework import PipelineServer, add_common_api_calls
 from pipeline_configs import PIPELINE_CONFIGS
 
@@ -14,8 +15,11 @@ load_dotenv()
 API_BASE_URL = "/api/transformer"
 
 app = FastAPI(
-    openapi_url=API_BASE_URL + "/openapi.json", docs_url=API_BASE_URL + "/docs", redoc_url=API_BASE_URL + "/redoc"
+    openapi_url=API_BASE_URL + "/openapi.json",
+    docs_url=API_BASE_URL + "/docs",
+    redoc_url=API_BASE_URL + "/redoc",
 )
+app.add_middleware(RequestCancelledMiddleware)
 pipeline_server: PipelineServer = PipelineServer(PIPELINE_CONFIGS, [])
 add_common_api_calls(app, pipeline_server, API_BASE_URL)
 add_dataset_endpoints(app, API_BASE_URL)
