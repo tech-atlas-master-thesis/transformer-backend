@@ -38,20 +38,22 @@ class ProjectNormalizeStep(StepConfig):
         for project in projects:
             project["keywords"] = project["keywords"].split(", ")
 
-    def add_organisations(self, projects: List[Dict[str, Any]], organisation_mapping: Dict[str, str]) -> None:
+    def add_organisations(self, projects: List[Dict[str, Any]], organisation_mapping: Dict[str, str]):
         for project in projects:
             orgs = json.loads(project["organisations"])
             project["organisations"] = [organisation_mapping.get(org["organisationName"]) for org in orgs]
             project_leaders = [
                 organisation_mapping.get(org["organisationName"])
                 for org in orgs
-                if org["role_in_project"] in ["Konsortialführer", "Einzelantragsteller"]
+                if "role_in_project" in org
+                and org["role_in_project"] in ["Konsortialführer", "Einzelantragsteller", "LEADER"]
             ]
-            project["projectLeader"] = (
-                None
-                if len(project_leaders) == 0
-                else project_leaders[0] if len(project_leaders) == 1 else project_leaders
-            )
+            if not project_leaders:
+                # TODO: find a way to globally catch events from step executions
+                print(
+                    f"No project leader found for project {project['title']} ({project['externalId']} from {project['data_source']})"
+                )
+            project["projectLeader"] = project_leaders[0] if len(project_leaders) == 1 else project_leaders
 
     def add_technology_ids(self, projects: List[Dict[str, Any]], technologies: Dict[str, List[str, str]]) -> None:
         for project in projects:
