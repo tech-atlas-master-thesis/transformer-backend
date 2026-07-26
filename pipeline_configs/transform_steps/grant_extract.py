@@ -25,14 +25,24 @@ class GrantExtractStep(StepConfig):
         grants = []
         pd.DataFrame().itertuples()
         for _, grant_data in SCRAPER_DATA.iterrows():
-            new_grant = {
-                "name": grant_data["bidding"],
-                "programme": grant_data["programme"],
-                "projects": 0,
-            }
-            if any(new_grant == grant for grant in grants):
-                continue
-            grants.append(new_grant)
+            # TODO: fix for FWF data ("grant")
+            new_grant = None
+            if "bidding" in grant_data or "programme" in grant_data:
+                new_grant = {
+                    "name": grant_data["bidding"],
+                    "programme": grant_data["programme"],
+                    "projects": 0,
+                }
+            if "grant" in grant_data:
+                new_grant = {
+                    "name": grant_data["grant"],
+                    "programme": grant_data["grant"],
+                    "projects": 0,
+                }
+            if new_grant:
+                if any(new_grant == grant for grant in grants):
+                    continue
+                grants.append(new_grant)
         yield f"Extracted {len(grants)} unique grants", EventType.INFO
         yield grants, EventType.RESULT
 
