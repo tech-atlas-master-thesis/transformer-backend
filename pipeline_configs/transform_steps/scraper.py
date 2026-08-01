@@ -34,6 +34,7 @@ class GetScraperResults(StepConfig):
         results: Optional[Dict[str, Any]] = None,
         pipeline: PipelineDummy = None,
         step: StepDummy = None,
+        **_,
     ):
         PIPELINE_NAME = user_config.get("PIPELINE_NAME")
         FFG_STEP = user_config.get("FFG_STEP")
