@@ -1,5 +1,5 @@
 import datetime
-import json
+import math
 from typing import Optional, Union, List, Dict, Any
 
 import pandas as pd
@@ -71,10 +71,17 @@ class ProjectExtractStep(StepConfig):
         SCRAPER_DATA["end"] = self._convert_to_date(SCRAPER_DATA["end"])
         projects = SCRAPER_DATA[RELEVANT_COLUMNS].to_dict("records")
         yield [
-            project
+            self.map(project, RELEVANT_COLUMNS)
             for project in projects
             if self._is_in_date_range(project, START_DATE_FROM, START_DATE_UNTIL, END_DATE_FROM, END_DATE_UNTIL)
         ], EventType.RESULT
+
+    def map(self, project: Dict[str, Any], columns: List[str]) -> Dict[str, Any]:
+        new_project = {}
+        for column in columns:
+            value = project[column]
+            new_project[column] = value if not isinstance(value, float) or not math.isnan(value) else None
+        return new_project
 
     def _convert_to_date(self, series: pd.Series) -> pd.Series:
         return pd.to_datetime(series, format="mixed", utc=True).replace({pd.NaT: None})
