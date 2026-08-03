@@ -21,7 +21,7 @@ app = FastAPI(
     redoc_url=API_BASE_URL + "/redoc",
 )
 app.add_middleware(RequestCancelledMiddleware)
-cache = EnrichmentCache(get_cache_db_client())
+# cache = EnrichmentCache(get_cache_db_client())
 pipeline_server: PipelineServer = PipelineServer(PIPELINE_CONFIGS, [])
 add_common_api_calls(app, pipeline_server, API_BASE_URL)
 add_dataset_endpoints(app, API_BASE_URL)
