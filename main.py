@@ -5,8 +5,7 @@ from fastapi import FastAPI
 
 from datasets import add_dataset_endpoints
 from middleware.requestCancelledMiddleware import RequestCancelledMiddleware
-from pipelineFramework import PipelineServer, add_common_api_calls, EnrichmentCache
-from pipelineFramework.server.db.helper import get_cache_db_client
+from pipelineFramework import PipelineServer, add_common_api_calls
 from pipeline_configs import PIPELINE_CONFIGS
 
 logging.basicConfig(level=logging.DEBUG)
